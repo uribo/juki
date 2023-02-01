@@ -41,7 +41,9 @@ make_vars <- function(path, ncols, sep = "_") {
   vars_1
 }
 
-read_idou_pref <- function(path, pref_code) {
+read_idou_pref <- function(path, pref_code, .tidy = FALSE) {
+  pref_code <-
+    stringr::str_pad(pref_code, width = 2, pad = "0")
   d <-
     daichou_idou_meta |>
     dplyr::filter(pref_code == {{ pref_code }})
@@ -51,8 +53,26 @@ read_idou_pref <- function(path, pref_code) {
                         sheet = 1,
                         skip = 7,
                         col_names = make_vars(path = path, ncols = d$ncol))
-    df_raw |>
+    df_mod <-
+      df_raw |>
       purrr::set_names(names(df_raw) |>
                          stringr::str_remove("_\u4eba$"))
+    if (.tidy == TRUE) {
+      df_mod <-
+        df_mod |>
+        tidy_idou_pref()
+    }
+    df_mod
   }
+}
+
+tidy_idou_pref <- function(df) {
+  `項目` <- value <- NULL
+  df |>
+    tidyr::pivot_longer(cols = seq.int(8, ncol(df)),
+                        names_to = c("\u79fb\u52d5\u5f8c\u306e\u4f4f\u6240\u5730",
+                                     "\u9805\u76ee"),
+                        names_pattern = "(.*)_(.*)") |>
+    tidyr::pivot_wider(names_from = `項目`,
+                       values_from = value)
 }
