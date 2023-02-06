@@ -18,4 +18,7 @@ Imports:
   dplyr,
   purrr,
   readxl,
-  stringr
+  rlang,
+  stringr,
+  tidyr
+RoxygenNote: 7.2.3

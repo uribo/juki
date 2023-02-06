@@ -1,3 +1,4 @@
+#' @noRd
 pull_vars <- function(..., ncol = NULL) {
   if (is.null(ncol)) {
     ncol <-
@@ -12,6 +13,7 @@ pull_vars <- function(..., ncol = NULL) {
     purrr::flatten_chr()
 }
 
+#' @noRd
 make_vars <- function(path, ncols, sep = "_") {
   vars_2a <-
     pull_vars(path, skip = 4, n_max = 1, ncol = ncols)
@@ -41,9 +43,26 @@ make_vars <- function(path, ncols, sep = "_") {
   vars_1
 }
 
+#' Read and tidy internal migration data for a specified prefecture in Japan.
+#'
+#' @param path Path to the Excel file containing the population migration data.
+#' @param pref_code a character string specifying the code for the prefecture of
+#' interest. This code should be a two-digit string (e.g. "01" for Hokkaido)
+#' @param .tidy option. A logical flag indicating whether the output should
+#' be in a tidy format or not.
+#' @examples
+#' \dontrun{
+#' read_idou_pref("b01036s.xlsx", pref_code = "36")
+#' }
+#' @rdname read_idou_pref
+#' @export
 read_idou_pref <- function(path, pref_code, .tidy = FALSE) {
   pref_code <-
     stringr::str_pad(pref_code, width = 2, pad = "0")
+  rlang::arg_match(pref_code,
+                   stringr::str_pad(seq.int(47),
+                                    width = 2,
+                                    pad = "0"))
   d <-
     daichou_idou_meta |>
     dplyr::filter(pref_code == {{ pref_code }})
@@ -66,13 +85,14 @@ read_idou_pref <- function(path, pref_code, .tidy = FALSE) {
   }
 }
 
+#' @noRd
 tidy_idou_pref <- function(df) {
-  `項目` <- value <- NULL
+  value <- NULL
   df |>
     tidyr::pivot_longer(cols = seq.int(8, ncol(df)),
                         names_to = c("\u79fb\u52d5\u5f8c\u306e\u4f4f\u6240\u5730",
                                      "\u9805\u76ee"),
                         names_pattern = "(.*)_(.*)") |>
-    tidyr::pivot_wider(names_from = `項目`,
+    tidyr::pivot_wider(names_from = "\u9805\u76ee",
                        values_from = value)
 }
