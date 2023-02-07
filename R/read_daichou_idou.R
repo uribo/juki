@@ -74,8 +74,7 @@ read_idou_pref <- function(path, pref_code, .tidy = FALSE) {
                         col_names = make_vars(path = path, ncols = d$ncol))
     df_mod <-
       df_raw |>
-      purrr::set_names(names(df_raw) |>
-                         stringr::str_remove("_\u4eba$"))
+      purrr::set_names(modify_idou_pref_sheet_name(df_raw))
     if (.tidy == TRUE) {
       df_mod <-
         df_mod |>
@@ -83,6 +82,36 @@ read_idou_pref <- function(path, pref_code, .tidy = FALSE) {
     }
     df_mod
   }
+}
+
+#' @noRd
+modify_idou_pref_sheet_name <- function(df) {
+  aa <- name <- name2 <- category <- NULL
+  x <-
+    names(df) |>
+    stringr::str_remove("\\.\\.\\..+$") |>
+    stringr::str_remove("_\u4eba$")
+  y <-
+    x[8:length(x)] |>
+    stringr::str_split("_", simplify = TRUE)
+  colnames(y) <- c("name", "category")
+  y <-
+    y |>
+    tibble::as_tibble() |>
+    purrr::set_names(c("name", "category")) |>
+    dplyr::mutate(aa = stringr::str_detect(name, "\u533a$"),
+                  name2 = dplyr::if_else(aa,
+                                         NA_character_,
+                                         name)) |>
+    tidyr::fill(name2, .direction = "down") |>
+    dplyr::transmute(name_fix = dplyr::if_else(aa,
+                                               paste0(name2, name),
+                                               name),
+                     category) |>
+    purrr::pmap(
+      \(name_fix, category, ...) stringr::str_c(name_fix, category, sep = "_")
+    )
+  c(x[1:7], y)
 }
 
 #' @noRd

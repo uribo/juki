@@ -20,5 +20,6 @@ Imports:
   readxl,
   rlang,
   stringr,
+  tibble,
   tidyr
 RoxygenNote: 7.2.3
