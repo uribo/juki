@@ -20,6 +20,6 @@ Read and tidy internal migration data for a specified prefecture in Japan.
 }
 \examples{
 \dontrun{
-read_idou_pref("b01036s.xlsx")
+read_idou_pref("b01036s.xlsx", pref_code = "36")
 }
 }
